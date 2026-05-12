@@ -1,0 +1,54 @@
+import { Injectable } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { PrismaService } from "src/prisma/prisma.service";
+import { LoginDto, RegisterDto } from "./dto";
+import { ExistingUserAtAuthException } from "src/common/exception";
+import * as bcrypt from 'bcrypt';
+
+@Injectable()
+export class AuthService {
+    constructor(private readonly prisma: PrismaService, private jwtService: JwtService) {}
+
+    async register(dto: RegisterDto) {
+        //Проверить email нет ли такого в БД
+        //Захешировать пароль
+        //Сохранить в БД
+        //Вернуть user
+        const existingUser = await this.prisma.user.findUnique({where: {email: dto.email}})
+        if (existingUser){
+            throw new ExistingUserAtAuthException();
+        }
+
+        const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+        const user = await this.prisma.user.create({
+            data: {
+                email: dto.email,
+                password: hashedPassword,
+                name: dto.name
+            }
+        });
+
+        return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            createdAt: user.createdAt,
+        }
+    }
+
+    async login(dto: LoginDto) {
+        //Проверить email есть ли такой в БД
+        //Если нет то ошибка
+        //Проверить пароль совпадает ли с захешированным паролем в БД
+        //Если нет то ошибка
+        //Сгенерировать JWT токен и вернуть его'
+
+        const existingUser = await this.prisma.user.findUnique({where: {email: dto.email}})
+        if (existingUser){
+            throw new ExistingUserAtAuthException();
+        }
+
+        //const isComparePassword =  await bcrypt.compare(dto.password, existingUser.password)
+    }
+}
