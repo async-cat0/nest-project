@@ -13,10 +13,6 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    //Проверить email нет ли такого в БД
-    //Захешировать пароль
-    //Сохранить в БД
-    //Вернуть user
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -61,7 +57,18 @@ export class AuthService {
     );
     if (!isComparePassword) {
       throw new UnauthorizedException('неверный логин или пароль');
-
     }
+
+    const access_token = this.jwtService.sign({
+      email: existingUser.email,
+      id: existingUser.id,
+    });
+
+    return {
+      access_token,
+      email: existingUser.email,
+      name: existingUser.name,
+      id: existingUser.id,
+    };
   }
 }
