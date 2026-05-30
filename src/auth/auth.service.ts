@@ -39,12 +39,6 @@ export class AuthService {
   }
 
   async login(dto: LoginDto) {
-    //Проверить email есть ли такой в БД
-    //Если нет то ошибка
-    //Проверить пароль совпадает ли с захешированным паролем в БД
-    //Если нет то ошибка
-    //Сгенерировать JWT токен и вернуть его'
-
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });

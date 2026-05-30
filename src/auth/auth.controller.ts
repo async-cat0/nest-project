@@ -17,7 +17,6 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Res({ passthrough: true }) res: Response,
   ) {
-    console.log(process.env.JWT_SECRET);
     const result = await this.authService.login(dto);
 
     res.cookie('access_token', result.access_token, {
@@ -28,5 +27,13 @@ export class AuthController {
     });
 
     return { message: 'Login successful' };
+  }
+
+  @Post('logout')
+  logout(@Res({ passthrough: true }) res: Response) {
+    res.clearCookie('access_token');
+    return {
+      message: 'Successful logout',
+    };
   }
 }
