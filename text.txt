@@ -1,0 +1,203 @@
+Декораторы:
+1.) Для ролей
+2.) Для публичных/приватных маршрутов
+
+NestJS Guard'ы выполняются до попадания запроса в обработчик контроллера.
+Guard должен понимать:
+    Этот маршрут публичный? → пропустить без проверки JWT
+    Этот маршрут требует определённых ролей? → проверить роль пользователя
+
+SetMetadata — это встроенная утилита NestJS.
+Она прикрепляет произвольные данные к методу или классу через Reflect API
+(стандартный механизм TypeScript/JavaScript для метаданных).
+
+Декоратор для ролей
+// src/common/decorators/roles.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+import { Role } from '../enums/role.enum';
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: Role[]) => SetMetadata(ROLES_KEY, roles);
+
+
+
+
+AuthGuard - авторизирован или нет.
+
+
+HTTP request -> JwtAuthGuard.canActivate()
+    ||
+isPublic? true / false
+    ||
+JwtStrategy:
+    1. jwtFromRequest(req) достаем куки
+    2. Проверяем подпись куков
+    3. validate(payload) => {userId, email, role}
+    ||
+    err? => throw (err)
+    !user? => throw UnAuthorization
+    return user => req.user - в контроллер
+
+
+
+
+ HOTEL
+
+
+ API:
+ Отели
+
+1.) Создать отель
+ POST /hotels
+
+2.) Получить список
+ GET /hotels
+
+3.)Получить один
+ GET /hotels/:id
+
+
+ Номера
+
+ 1.) Создать номер
+ POST /rooms
+
+ 3.)Список номеров отеля
+ GET /hotels/:id/rooms
+
+ Пользователи
+
+ 1.) Создать пользователя
+ POST /users
+
+ 2.) Список пользователей
+ GET /users
+
+ Бронирования
+
+ 1.)Создать бронь
+ POST /bookings
+
+ 2.)Получить брони пользователя
+ GET /users/:id/bookings
+
+ 3.)Получить все брони номера
+ GET /rooms/:id/bookings
+
+ 4.)Отменить бронь
+ DELETE /bookings/:id
+
+ Бизнес-правила
+ Проверка дат
+
+ Нельзя создать бронь если:
+
+ startDate >= endDate
+
+ Ошибка:
+
+ 400 Bad Request
+ Проверка пересечения
+
+ Если номер уже забронирован:
+
+ 1 июня - 5 июня
+
+ то нельзя создать:
+
+ 2 июня - 4 июня
+
+ или
+
+ 4 июня - 10 июня
+
+ или
+
+ 30 мая - 2 июня
+
+ Поиск пересечения:
+
+ const exists = await prisma.booking.findFirst({
+   where: {
+     roomId,
+     startDate: {
+       lt: endDate,
+     },
+     endDate: {
+       gt: startDate,
+     },
+   },
+ });
+ Подсчет стоимости
+
+ Количество ночей:
+
+ const nights =
+   differenceInCalendarDays(endDate, startDate);
+
+ Стоимость:
+
+ const totalPrice =
+   room.pricePerNight * nights;
+ Prisma Relations
+ Hotel
+  └── Room
+
+ Room
+  └── Booking
+
+ User
+  └── Booking
+ Что обязательно использовать
+ DTO
+ CreateHotelDto
+ CreateRoomDto
+ CreateBookingDto
+ Validation
+ @IsString()
+ @IsEmail()
+ @IsDateString()
+ @IsInt()
+ @Min()
+ Exception
+
+ Не делать:
+
+ return {
+   error: 'room occupied'
+ }
+
+ Делать:
+
+ throw new ConflictException(
+   'Room already booked',
+ );
+ Дополнительные задачи после MVP
+ Свободные номера
+ GET /rooms/available
+
+ Параметры:
+
+ startDate
+ endDate
+ city
+ guests
+
+ Нужно вернуть только доступные номера.
+
+ Пагинация
+ GET /hotels?page=1&limit=10
+ Сортировка
+ GET /rooms?sort=price
+ Фильтрация
+ GET /rooms?minPrice=5000&maxPrice=15000
+ Транзакция
+
+ При создании брони сохранять:
+
+ Booking
+ BookingLog
+
+ через:
+
+ prisma.$transaction()

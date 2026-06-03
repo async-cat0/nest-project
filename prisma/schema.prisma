@@ -1,20 +1,81 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider     = "prisma-client"
+  output       = "../generated/prisma"
   moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
-
 }
 
+model Hotel {
+  id      Int    @id @default(autoincrement())
+  name    String
+  city    String
+  address String
+
+  rooms Room[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("hotels")
+}
+
+model Room {
+  id            Int     @id @default(autoincrement())
+  hotelId       Int
+  name          String
+  description   String?
+  pricePerNight Int
+  maxGuests     Int
+
+  hotel Hotel @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([hotelId])
+  @@index([pricePerNight])
+  @@map("rooms")
+}
 
 model User {
-  id Int @id @default(autoincrement())
-  email String @unique
-  name String
-  password String
-  createdAt DateTime?
+  id        Int    @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String @unique
+
+  bookings Booking[]
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Booking {
+  id     Int @id @default(autoincrement())
+  userId Int
+  roomId Int
+
+  startDate DateTime
+  endDate   DateTime
+
+  totalPrice Int
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([roomId])
+  // ускоряет поиск пересечений дат
+  @@index([roomId, startDate, endDate])
+  @@map("bookings")
 }
