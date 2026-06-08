@@ -15,9 +15,15 @@ export class HotelService {
     return this.prisma.hotel.findMany();
   }
 
-  findOne(id: number) {
-    return this.prisma.hotel.findUnique({
+  async findOne(id: number) {
+    const hotel = await this.prisma.hotel.findUnique({
       where: { id },
     });
+
+    if (!hotel) {
+      throw new Error('Not found');
+    }
+
+    return hotel;
   }
 }
