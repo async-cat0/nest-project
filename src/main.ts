@@ -4,7 +4,7 @@ import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
 
 import 'dotenv/config';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +14,7 @@ async function bootstrap() {
   const PORT = process.env.PORT ?? 3000;
 
   app.use(cookieParser());
+  app.useGlobalPipes(new ValidationPipe());
 
   await app.listen(PORT);
 

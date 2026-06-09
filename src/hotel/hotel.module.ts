@@ -3,7 +3,6 @@ import { HotelController } from './hotel.controller';
 import { HotelService } from './hotel.service';
 
 @Module({
-  imports: [],
   controllers: [HotelController],
   providers: [HotelService],
 })

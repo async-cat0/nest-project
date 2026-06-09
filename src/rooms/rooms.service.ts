@@ -4,15 +4,16 @@ import { CreateRoomsDto } from './dto/create-rooms.dto';
 
 @Injectable()
 export class RoomsService {
-  constructor(private readonly Prisma: PrismaService) {}
-  create(dto: CreateRoomsDto) {
-    return this.Prisma.room.create({
+  constructor(private readonly prisma: PrismaService) {}
+
+   async create(dto: CreateRoomsDto) {
+    return this.prisma.room.create({
       data: dto,
     });
   }
 
   async findHotelRooms(id: number) {
-    const hotel = await this.Prisma.hotel.findUnique({
+    const hotel = await this.prisma.hotel.findUnique({
       where: { id },
     });
 
@@ -20,7 +21,7 @@ export class RoomsService {
       throw new Error('not found');
     }
 
-    return this.Prisma.room.findMany({
+    return this.prisma.room.findMany({
       where: { hotelId: id },
     });
   }

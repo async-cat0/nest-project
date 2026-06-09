@@ -5,6 +5,7 @@ import { HotelService } from './hotel.service';
 @Controller('hotels')
 export class HotelController {
   constructor(private hotelService: HotelService) {}
+
   @Post()
   async create(dto: CreateHotelDto) {
     return this.hotelService.create(dto);
