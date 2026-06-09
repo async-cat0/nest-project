@@ -1,4 +1,4 @@
-import { Controller, Get, Post } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { CreateHotelDto } from './dto/create-hotel.dto';
 import { HotelService } from './hotel.service';
 
@@ -7,7 +7,7 @@ export class HotelController {
   constructor(private hotelService: HotelService) {}
 
   @Post()
-  async create(dto: CreateHotelDto) {
+  async create(@Body() dto: CreateHotelDto) {
     return this.hotelService.create(dto);
   }
 
@@ -17,7 +17,7 @@ export class HotelController {
   }
 
   @Get(':id')
-  async findOne(id: number) {
-    return this.hotelService.findOne(id);
+  async findOne(@Param('id') id: string) {
+    return this.hotelService.findOne(Number(id));
   }
 }
