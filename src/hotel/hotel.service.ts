@@ -5,7 +5,7 @@ import { Hotel } from '../../generated/prisma/client';
 
 @Injectable()
 export class HotelService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private prisma: PrismaService) {}
 
   create(dto: CreateHotelDto) {
     return this.prisma.hotel.create({
